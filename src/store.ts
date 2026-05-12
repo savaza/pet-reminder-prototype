@@ -35,13 +35,19 @@ interface AppState {
   confirmPayload: ConfirmPayload | null
   notifPermission: NotificationPermission | 'unsupported'
 
+  editingTodoId: number | null
+
   // Actions
   loadFromDB: () => Promise<void>
   addTodo: (t: Omit<Todo, 'id' | 'createdAt'>) => Promise<void>
+  updateTodo: (id: number, patch: Partial<Todo>) => Promise<void>
+  deleteTodo: (id: number) => Promise<void>
   toggleTodo: (id: number) => Promise<void>
   completeTodo: (id: number) => Promise<void>
+  uncompleteTodo: (id: number) => Promise<void>
   snoozeTodo: (id: number, minutes: number) => Promise<void>
   fireTodo: (todo: Todo) => Promise<void>
+  openEditTodo: (id: number | null) => void
   setFilter: (f: Filter) => void
   setMood: (moodIdx: number, periodIdx?: number) => void
   cycleMood: () => void
@@ -77,6 +83,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   toast: null,
   confirmPayload: null,
   notifPermission: 'default' as NotificationPermission,
+  editingTodoId: null,
 
   async loadFromDB() {
     const [todos, pet, portraits] = await Promise.all([
@@ -92,6 +99,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     const full = await db.todos.get(id)
     if (full) set((s) => ({ todos: [...s.todos, full], activeMoodIdx: MOOD_IDX.hello }))
   },
+
+  async updateTodo(id, patch) {
+    await db.todos.update(id, patch)
+    set((s) => ({ todos: s.todos.map((x) => (x.id === id ? { ...x, ...patch } : x)) }))
+  },
+
+  async deleteTodo(id) {
+    await db.todos.delete(id)
+    set((s) => ({ todos: s.todos.filter((x) => x.id !== id) }))
+  },
+
+  async uncompleteTodo(id) {
+    await db.todos.update(id, { done: false, lastFiredAt: undefined })
+    set((s) => ({ todos: s.todos.map((x) => (x.id === id ? { ...x, done: false, lastFiredAt: undefined } : x)) }))
+  },
+
+  openEditTodo(id) { set({ editingTodoId: id, modal: id !== null ? 'add-todo' : 'none' }) },
 
   async toggleTodo(id) {
     const t = get().todos.find((x) => x.id === id)

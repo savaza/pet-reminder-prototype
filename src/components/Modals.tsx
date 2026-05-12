@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store'
 import type { GroupId, PriorityId, RepeatId } from '@/types'
 
 export function AddTodoModal() {
-  const { modal, openModal, addTodo } = useAppStore()
+  const { modal, openModal, addTodo, updateTodo, deleteTodo, openEditTodo, editingTodoId, todos } = useAppStore()
+  const editing = editingTodoId != null ? todos.find((t) => t.id === editingTodoId) : undefined
+  const isEditing = !!editing
+
   const [title, setTitle] = useState('')
   const [group, setGroup] = useState<GroupId>('work')
   const [priority, setPriority] = useState<PriorityId>('p1')
@@ -11,18 +14,34 @@ export function AddTodoModal() {
   const [repeat, setRepeat] = useState<RepeatId>('once')
   const [due, setDue] = useState('')
 
-  const close = () => openModal('none')
+  useEffect(() => {
+    if (editing) {
+      setTitle(editing.title); setGroup(editing.group); setPriority(editing.priority)
+      setTime(editing.time); setRepeat(editing.repeat); setDue(editing.due ?? '')
+    } else if (modal === 'add-todo') {
+      setTitle(''); setGroup('work'); setPriority('p1'); setTime('09:00'); setRepeat('once'); setDue('')
+    }
+  }, [editingTodoId, modal, editing])
+
+  const close = () => { openModal('none'); openEditTodo(null) }
   const submit = async () => {
     if (!title.trim()) { alert('请输入待办内容'); return }
-    await addTodo({ title: title.trim(), group, priority, time, repeat, due: due || undefined, enabled: true, done: false })
-    setTitle('')
+    const patch = { title: title.trim(), group, priority, time, repeat, due: due || undefined }
+    if (isEditing && editing) await updateTodo(editing.id, patch)
+    else                       await addTodo({ ...patch, enabled: true, done: false })
+    close()
+  }
+  const handleDelete = async () => {
+    if (!editing) return
+    if (!confirm(`确定删除「${editing.title}」？不可撤销。`)) return
+    await deleteTodo(editing.id)
     close()
   }
 
   return (
     <div className={`modal-bg ${modal === 'add-todo' ? 'show' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) close() }}>
       <div className="modal">
-        <div className="modal-h">新建待办 ✍️</div>
+        <div className="modal-h">{isEditing ? '编辑待办 ✏️' : '新建待办 ✍️'}</div>
         <div className="field"><label>内容</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：该喝水啦" /></div>
         <div className="grid-2">
           <div className="field"><label>分组</label>
@@ -45,9 +64,13 @@ export function AddTodoModal() {
           </div>
         </div>
         <div className="field"><label>截止日（可选）</label><input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
+          {isEditing && (
+            <button className="btn-soft" style={{ color: '#DC2626', borderColor: '#FCA5A5' }} onClick={handleDelete}>🗑 删除</button>
+          )}
+          <div style={{ flex: 1 }} />
           <button className="btn-soft" onClick={close}>取消</button>
-          <button className="btn-coral" onClick={submit}>保存</button>
+          <button className="btn-coral" onClick={submit}>{isEditing ? '保存修改' : '创建'}</button>
         </div>
       </div>
     </div>
