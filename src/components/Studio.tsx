@@ -1,9 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { useAppStore } from '@/store'
 import { MOODS, PERIODS } from '@/lib/constants'
 import type { MoodId, PeriodId, Portrait } from '@/types'
 import { COST_IMAGE, COST_VIDEO } from '@/types'
 import { IMEInput } from './IMEInput'
+
+const STYLE_LABEL: Record<string, string> = {
+  realistic: '📸 写实照片风（Gemini Flash Image / Veo 2）',
+  anime: '🎨 日系二次元',
+  pixar: '🎬 皮克斯 3D',
+  ink: '🖼 中国水墨',
+}
 
 /**
  * 宠物工作室（Studio）
@@ -16,9 +23,18 @@ import { IMEInput } from './IMEInput'
 export function Studio() {
   const {
     studioOpen, toggleStudio, portraits, petName, setPetName,
+    petPhotoUrl, petPhotoInfo, petBaseStyle, uploadPetPhoto, setBaseStyle,
     generatePortrait, removePortrait, requestConfirm,
   } = useAppStore()
   const [selectedCell, setSelectedCell] = useState<{ mi: number; pi: number } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleUploadClick = () => fileInputRef.current?.click()
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) await uploadPetPhoto(f)
+    e.target.value = '' // 允许再次选择同名文件
+  }
 
   const todaySpent = useMemo(() => {
     const now = new Date()
@@ -59,18 +75,46 @@ export function Studio() {
       {/* 宠物基准照 */}
       <section className="studio-section">
         <div className="studio-h">📷 基准照片</div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
         <div className="pet-base-row">
-          <div className="pet-base-thumb">
-            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=200&q=80" alt="" />
+          <div className="pet-base-thumb" style={{ cursor: 'pointer' }} onClick={handleUploadClick} title="点击更换">
+            {petPhotoUrl ? (
+              <img src={petPhotoUrl} alt="基准照" />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', fontSize: 10, color: 'var(--ink-3)', textAlign: 'center', padding: 4 }}>
+                点击<br />上传
+              </div>
+            )}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 600 }}>bobo.jpg · 175 KB</div>
+            {petPhotoInfo ? (
+              <div style={{ fontSize: 13, fontWeight: 600 }}>
+                {petPhotoInfo.name} · {(petPhotoInfo.size / 1024).toFixed(0)} KB
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-3)' }}>尚未上传基准照</div>
+            )}
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>
-              用于 AI 生成时保持宠物面部特征一致性
+              用于 AI 生成时保持宠物面部特征一致性（JPG/PNG/WEBP，≤8MB）
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button className="btn-soft" style={{ padding: '6px 10px', fontSize: 12 }}>📷 更换</button>
-              <button className="btn-soft" style={{ padding: '6px 10px', fontSize: 12 }}>➕ 追加角度</button>
+              <button className="btn-coral" style={{ padding: '6px 10px', fontSize: 12 }} onClick={handleUploadClick}>
+                📷 {petPhotoUrl ? '更换' : '上传基准照'}
+              </button>
+              <button
+                className="btn-soft"
+                style={{ padding: '6px 10px', fontSize: 12, opacity: 0.5, cursor: 'not-allowed' }}
+                title="V2 再做：多角度能提升 AI 一致性"
+                onClick={() => alert('➕ 追加角度 · V2 再做（多张不同角度的参考照能让 AI 生成时脸部一致性更稳）')}
+              >
+                ➕ 追加角度
+              </button>
             </div>
           </div>
         </div>
@@ -85,11 +129,11 @@ export function Studio() {
         </div>
         <div className="field">
           <label>基底画风</label>
-          <select>
-            <option>📸 写实照片风（Gemini Flash Image / Veo 2）</option>
-            <option>🎨 日系二次元</option>
-            <option>🎬 皮克斯 3D</option>
-            <option>🖼 中国水墨</option>
+          <select
+            value={petBaseStyle}
+            onChange={(e) => setBaseStyle(e.target.value as 'realistic' | 'anime' | 'pixar' | 'ink')}
+          >
+            {Object.entries(STYLE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
       </section>

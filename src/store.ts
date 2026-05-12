@@ -21,6 +21,9 @@ interface AppState {
   // 数据
   todos: Todo[]
   petName: string
+  petPhotoUrl: string | null     // 用户上传基准照的 object URL
+  petPhotoInfo: { name: string; size: number; mime: string } | null
+  petBaseStyle: 'realistic' | 'anime' | 'pixar' | 'ink'
   portraits: Portrait[]
 
   // UI
@@ -48,6 +51,8 @@ interface AppState {
   snoozeTodo: (id: number, minutes: number) => Promise<void>
   fireTodo: (todo: Todo) => Promise<void>
   openEditTodo: (id: number | null) => void
+  uploadPetPhoto: (file: File) => Promise<void>
+  setBaseStyle: (s: 'realistic' | 'anime' | 'pixar' | 'ink') => Promise<void>
   setFilter: (f: Filter) => void
   setMood: (moodIdx: number, periodIdx?: number) => void
   cycleMood: () => void
@@ -72,6 +77,9 @@ const PERIOD_IDX: Record<PeriodId, number> = { morning: 0, noon: 1, afternoon: 2
 export const useAppStore = create<AppState>((set, get) => ({
   todos: [],
   petName: '波波',
+  petPhotoUrl: null,
+  petPhotoInfo: null,
+  petBaseStyle: 'realistic',
   portraits: [],
   activeMoodIdx: 1,
   activePeriodIdx: periodFromHour(new Date().getHours()),
@@ -91,7 +99,24 @@ export const useAppStore = create<AppState>((set, get) => ({
       db.pet.get(1),
       db.portraits.toArray(),
     ])
-    set({ todos, petName: pet?.name ?? '波波', portraits })
+    let petPhotoUrl: string | null = null
+    let petPhotoInfo: AppState['petPhotoInfo'] = null
+    if (pet?.sourcePhotoBlob) {
+      petPhotoUrl = URL.createObjectURL(pet.sourcePhotoBlob)
+      petPhotoInfo = {
+        name: (pet as any).photoName ?? 'pet.jpg',
+        size: pet.sourcePhotoBlob.size,
+        mime: pet.sourcePhotoBlob.type || 'image/jpeg',
+      }
+    }
+    set({
+      todos,
+      petName: pet?.name ?? '波波',
+      petPhotoUrl,
+      petPhotoInfo,
+      petBaseStyle: pet?.baseStyle ?? 'realistic',
+      portraits,
+    })
   },
 
   async addTodo(t) {
@@ -116,6 +141,35 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   openEditTodo(id) { set({ editingTodoId: id, modal: id !== null ? 'add-todo' : 'none' }) },
+
+  async uploadPetPhoto(file) {
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件（JPG/PNG/WEBP）')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert('图片过大（>8MB），请压缩后再上传')
+      return
+    }
+    // File 继承 Blob，直接存
+    await db.pet.update(1, {
+      sourcePhotoBlob: file,
+      // 保留原始文件名到自定义字段（Dexie 允许扩展字段）
+      ...( { photoName: file.name } as any ),
+    })
+    const old = get().petPhotoUrl
+    if (old) URL.revokeObjectURL(old)
+    const url = URL.createObjectURL(file)
+    set({
+      petPhotoUrl: url,
+      petPhotoInfo: { name: file.name, size: file.size, mime: file.type || 'image/jpeg' },
+    })
+  },
+
+  async setBaseStyle(s) {
+    await db.pet.update(1, { baseStyle: s })
+    set({ petBaseStyle: s })
+  },
 
   async toggleTodo(id) {
     const t = get().todos.find((x) => x.id === id)
