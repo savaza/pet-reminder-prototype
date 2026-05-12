@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FurryBuddy · 你的宠物化身</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-a:#FFF6F0; --bg-b:#F4F1FF;
+    --ink:#0F172A; --ink-2:#475569; --ink-3:#94A3B8;
+    --surface:#FFFFFF; --surface-2:#FAFAFA;
+    --border:#F1F5F9; --border-2:#E2E8F0;
+    --coral:#FF6B4A; --coral-2:#FF8A6B;
+    --violet:#7C3AED; --emerald:#10B981;
+    --amber:#F59E0B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Inter","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(600px 500px at 10% 0%, rgba(255,180,140,0.4) 0%, transparent 60%),
+      radial-gradient(700px 600px at 95% 100%, rgba(167,139,250,0.35) 0%, transparent 65%),
+      radial-gradient(500px 400px at 80% 10%, rgba(251,207,232,0.5) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-a) 0%, var(--bg-b) 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    letter-spacing:-0.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+  .app-shell{max-width:1100px;margin:0 auto;padding:28px 24px 140px}
+
+  /* ============ Top Nav ============ */
+  .topnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .greet{display:flex;align-items:center;gap:12px}
+  .avatar{
+    width:44px;height:44px;border-radius:14px;
+    background:linear-gradient(135deg, #FFCBA4 0%, #E6B3FF 100%);
+    display:grid;place-items:center;font-weight:700;color:#fff;font-size:16px;
+    box-shadow:0 4px 12px rgba(255,107,74,0.15);
+  }
+  .greet-text{font-size:13px;color:var(--ink-2);line-height:1.2}
+  .greet-text b{display:block;color:var(--ink);font-size:16px;font-weight:700;margin-top:2px}
+  .nav-btns{display:flex;gap:8px}
+  .nav-btn{
+    background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.9);
+    border-radius:12px;padding:8px 14px;font-size:13px;font-weight:500;
+    color:var(--ink-2);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;
+  }
+  .nav-btn:hover{background:#fff;color:var(--ink);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+
+  /* ============ Hero · Pet Showcase ============ */
+  .hero{
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.8);
+    border-radius:28px;padding:28px;margin-bottom:22px;
+    display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+    box-shadow:0 12px 40px rgba(124,58,237,0.08);
+  }
+  .portrait-wrap{position:relative;width:180px;height:180px}
+  .portrait-aura{
+    position:absolute;inset:-12px;border-radius:50%;
+    background:conic-gradient(from 0deg, #FF6B4A, #F59E0B, #7C3AED, #10B981, #FF6B4A);
+    filter:blur(18px);opacity:0.5;
+    animation:spin 8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .portrait-ring{
+    position:absolute;inset:0;border-radius:50%;
+    background:#fff;padding:4px;overflow:hidden;
+    box-shadow:0 8px 30px rgba(0,0,0,0.1);
+  }
+  .portrait-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;
+    animation:breathe 4s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+  .portrait-badge{
+    position:absolute;bottom:-4px;right:-4px;
+    background:#fff;border-radius:16px;padding:6px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.1);
+    font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px;
+  }
+  .hero-info{min-width:0}
+  .pet-name-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .pet-name{font-size:24px;font-weight:800;letter-spacing:-0.02em}
+  .mood-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:linear-gradient(135deg,#FFE4D6 0%,#FFD6E4 100%);
+    padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#B54708;
+  }
+  .pet-msg{
+    font-size:15px;line-height:1.6;color:var(--ink);margin:10px 0 16px;
+    font-weight:500;
+  }
+  .hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-soft{
+    background:#fff;border:1px solid var(--border);border-radius:12px;
+    padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink);
+    cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn-soft:hover{border-color:var(--coral);color:var(--coral);transform:translateY(-1px)}
+  .btn-coral{
+    background:linear-gradient(135deg,var(--coral) 0%,var(--coral-2) 100%);
+    color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;
+    cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+    box-shadow:0 4px 14px rgba(255,107,74,0.35);
+  }
+  .btn-coral:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,107,74,0.45)}
+  .btn-coral:active{transform:scale(0.97)}
+
+  /* Stats Strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+  .stat{
+    background:rgba(255,255,255,0.75);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.9);border-radius:18px;padding:14px 16px;
+  }
+  .stat .v{font-size:22px;font-weight:800;letter-spacing:-0.03em;line-height:1.1}
+  .stat .l{font-size:11px;color:var(--ink-2);margin-top:3px;font-weight:500}
+  .stat.coral .v{color:var(--coral)} .stat.violet .v{color:var(--violet)}
+  .stat.emerald .v{color:var(--emerald)} .stat.amber .v{color:var(--amber)}
+
+  /* ============ Today Section ============ */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 4px}
+  .section-title{font-size:20px;font-weight:800;letter-spacing:-0.02em}
+  .section-sub{font-size:12px;color:var(--ink-3);margin-left:8px;font-weight:500}
+  .filter-row{display:flex;gap:6px;padding:0 4px;margin-bottom:14px}
+  .filter-chip{
+    background:rgba(255,255,255,0.6);border:1px solid transparent;
+    padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    color:var(--ink-2);cursor:pointer;transition:all .15s;
+  }
+  .filter-chip:hover{background:#fff}
+  .filter-chip.active{background:var(--ink);color:#fff}
+
+  /* Todo Card */
+  .todo-list{display:flex;flex-direction:column;gap:10px}
+  .todo{
+    background:#fff;border:1px solid var(--border);border-radius:20px;
+    padding:14px 16px;display:flex;align-items:center;gap:14px;
+    transition:all .18s;cursor:pointer;
+  }
+  .todo:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(15,23,42,0.06);border-color:var(--border-2)}
+  .todo-time{
+    flex:0 0 56px;text-align:center;
+  }
+  .todo-time .h{font-size:18px;font-weight:800;letter-spacing:-0.02em}
+  .todo-time .m{font-size:11px;color:var(--ink-3);margin-top:-2px;font-weight:500}
+  .todo-pet{
+    width:44px;height:44px;border-radius:14px;overflow:hidden;flex:0 0 44px;
+    background:var(--surface-2);position:relative;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  }
+  .todo-pet img{width:100%;height:100%;object-fit:cover}
+  .todo-main{flex:1;min-width:0}
+  .todo-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-0.01em}
+  .todo-meta{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
+  .mini-tag{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+  .mt-work{background:#EFF6FF;color:#1D4ED8}
+  .mt-life{background:#FDF2F8;color:#BE185D}
+  .mt-health{background:#ECFDF5;color:#047857}
+  .mt-p0{background:#FEE2E2;color:#B91C1C}
+  .mt-p1{background:#FEF3C7;color:#B45309}
+  .mt-p2{background:#F1F5F9;color:#475569}
+  .mt-repeat{color:var(--ink-3);font-size:11px;font-weight:500}
+  .toggle{
+    width:42px;height:24px;border-radius:20px;background:var(--border-2);
+    position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;
+  }
+  .toggle.on{background:var(--emerald)}
+  .toggle .knob{
+    position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+    background:#fff;transition:left .22s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  .toggle.on .knob{left:21px}
+
+  /* ============ Bottom Floating Dock ============ */
+  .dock{
+    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+    background:rgba(15,23,42,0.92);backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:28px;padding:6px;display:flex;gap:4px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.25);z-index:30;
+  }
+  .dock-btn{
+    color:#fff;background:transparent;border:none;
+    padding:10px 16px;border-radius:22px;font-size:13px;font-weight:600;
+    cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+  }
+  .dock-btn:hover{background:rgba(255,255,255,0.08)}
+  .dock-btn.primary{
+    background:linear-gradient(135deg,var(--coral) 0%,#FF8A6B 100%);
+  }
+  .dock-btn.primary:hover{transform:scale(1.03)}
+
+  /* ============ Pet Gallery Bottom Sheet ============ */
+  .sheet-backdrop{
+    position:fixed;inset:0;background:rgba(15,23,42,0.4);
+    backdrop-filter:blur(4px);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .sheet-backdrop.show{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:45;
+    background:#fff;border-radius:28px 28px 0 0;
+    transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+    max-height:80vh;overflow-y:auto;
+  }
+  .sheet.show{transform:translateY(0)}
+  .sheet-handle{width:40px;height:4px;background:var(--border-2);border-radius:4px;margin:10px auto 0}
+  .sheet-body{padding:18px 24px 28px;max-width:900px;margin:0 auto}
+  .gallery-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .g-cell{
+    aspect-ratio:1/1;border-radius:14px;overflow:hidden;position:relative;cursor:pointer;
+    border:2px solid transparent;transition:all .15s;
+  }
+  .g-cell:hover{transform:scale(1.04)}
+  .g-cell.active{border-color:var(--coral);box-shadow:0 6px 18px rgba(255,107,74,0.35)}
+  .g-cell img{width:100%;height:100%;object-fit:cover}
+  .g-cap{
+    position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(transparent,rgba(0,0,0,0.7));
+    color:#fff;font-size:10px;padding:10px 6px 5px;font-weight:600;text-align:center;
+  }
+  .g-festival{position:absolute;top:4px;right:4px;width:16px;height:16px;
+    background:var(--amber);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:9px}
+
+  /* ============ Modals / Toast ============ */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,0.45);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:60}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:24px;width:440px;padding:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:pop .25s}
+  @keyframes pop{from{transform:scale(0.92);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-h{font-size:18px;font-weight:800;margin-bottom:16px;letter-spacing:-0.02em}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;color:var(--ink-2);font-weight:600;margin-bottom:6px;letter-spacing:0.02em;text-transform:uppercase}
+  .field input,.field select{
+    width:100%;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:12px;padding:10px 12px;font-size:14px;font-family:inherit;
+    transition:border-color .15s;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--coral)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* Reminder Toast (宠物大图在顶部) */
+  .toast{
+    position:fixed;right:20px;bottom:90px;z-index:50;width:340px;
+    background:#fff;border-radius:24px;overflow:hidden;
+    box-shadow:0 28px 70px rgba(15,23,42,0.28), 0 0 0 1px rgba(255,255,255,0.8) inset;
+    transform:translateY(30px) scale(0.92);opacity:0;pointer-events:none;
+    transition:all .45s cubic-bezier(.3,.8,.2,1.3);
+  }
+  .toast.show{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+  .toast-stage{
+    position:relative;height:260px;overflow:hidden;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,180,140,0.55) 0%, transparent 55%),
+      radial-gradient(circle at 75% 80%, rgba(167,139,250,0.45) 0%, transparent 55%),
+      linear-gradient(135deg,#FFF5ED 0%,#F3EFFF 100%);
+  }
+  .toast-stage img{
+    width:100%;height:100%;object-fit:cover;
+    animation:toast-float 3.5s ease-in-out infinite;
+  }
+  @keyframes toast-float{
+    0%,100%{transform:scale(1.02) translateY(0)}
+    50%{transform:scale(1.05) translateY(-5px)}
+  }
+  .toast.show .toast-stage img{
+    animation:toast-enter .85s cubic-bezier(.3,.9,.25,1.5), toast-float 3.5s ease-in-out .85s infinite;
+  }
+  @keyframes toast-enter{
+    0%{transform:scale(0.55) translateY(40px);opacity:0}
+    55%{transform:scale(1.1) translateY(-6px);opacity:1}
+    78%{transform:scale(0.98) translateY(2px)}
+    100%{transform:scale(1.02) translateY(0)}
+  }
+  .toast-badge{
+    position:absolute;top:12px;left:12px;
+    background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);
+    padding:6px 11px;border-radius:20px;font-size:11px;font-weight:700;
+    color:var(--coral);letter-spacing:0.1em;
+    display:inline-flex;align-items:center;gap:5px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  }
+  .toast-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--coral);
+    animation:blink 1.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  .toast-bubble{
+    position:absolute;bottom:14px;left:14px;right:14px;
+    background:rgba(255,255,255,0.96);backdrop-filter:blur(14px);
+    border-radius:16px;padding:10px 14px;font-size:14px;font-weight:600;
+    color:var(--ink);line-height:1.45;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  }
+  .toast-bubble::before{
+    content:"";position:absolute;top:-5px;left:28px;width:12px;height:12px;
+    background:rgba(255,255,255,0.96);transform:rotate(45deg);
+    box-shadow:-1px -1px 4px rgba(0,0,0,0.04);
+  }
+  .toast-body-wrap{padding:14px 16px 4px;position:relative;z-index:1}
+  .toast-title{font-size:11px;color:var(--ink-3);font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+  .toast-body{font-size:15px;font-weight:700;color:var(--ink);margin-top:4px;line-height:1.4;letter-spacing:-0.01em}
+  .toast-meta{font-size:11px;color:var(--ink-3);margin-top:5px;font-style:italic}
+  .toast-actions{display:flex;gap:6px;padding:10px 14px 14px}
+
+  /* Drawer */
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:90vw;background:#fff;
+    transform:translateX(100%);transition:transform .3s;z-index:55;
+    padding:24px;overflow-y:auto;box-shadow:-20px 0 50px rgba(0,0,0,0.1)}
+  .drawer.show{transform:translateX(0)}
+
+  /* Group scroll bar subtle */
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:rgba(15,23,42,0.15);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ Top Nav ============ -->
+  <div class="topnav">
+    <div class="greet">
+      <div class="avatar">韩</div>
+      <div class="greet-text">
+        <span id="greet-period">下午好</span>
+        <b>韩瑞，有 <span id="greet-count">3</span> 件事要完成 ✨</b>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" id="btn-demo">▶ 演示提醒</button>
+      <button class="nav-btn" id="btn-skin">🎐 日常</button>
+      <button class="nav-btn" id="btn-settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- ============ Hero ============ -->
+  <div class="hero">
+    <div class="portrait-wrap">
+      <div class="portrait-aura"></div>
+      <div class="portrait-ring">
+        <img id="portrait-img" alt=""
+             src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80">
+      </div>
+      <div class="portrait-badge"><span id="mood-emoji">👋</span><span id="mood-badge-name">打招呼</span></div>
+    </div>
+    <div class="hero-info">
+      <div class="pet-name-row">
+        <div class="pet-name" id="pet-name">波波</div>
+        <div class="mood-pill"><span id="mood-pill-emoji">☀️</span><span id="mood-pill-period">下午</span></div>
+      </div>
+      <div class="pet-msg" id="pet-msg">下午好呀主人～ 刚睡了个午觉，超想你的欸！</div>
+      <div class="hero-actions">
+        <button class="btn-coral" id="btn-gallery">🎭 全部立绘 · 30</button>
+        <button class="btn-soft" id="btn-next-mood">↻ 换个表情</button>
+        <button class="btn-soft" id="btn-regen">✨ 重新生成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Stats ============ -->
+  <div class="stats">
+    <div class="stat coral"><div class="v" id="s-today">6</div><div class="l">今日待办</div></div>
+    <div class="stat emerald"><div class="v" id="s-done">2</div><div class="l">已完成</div></div>
+    <div class="stat violet"><div class="v" id="s-streak">14</div><div class="l">连续打卡天</div></div>
+    <div class="stat amber"><div class="v">30</div><div class="l">立绘池</div></div>
+  </div>
+
+  <!-- ============ Today ============ -->
+  <div class="section-header">
+    <div><span class="section-title">今天</span><span class="section-sub" id="today-date">2026 年 5 月 12 日 · 星期二</span></div>
+  </div>
+  <div class="filter-row">
+    <button class="filter-chip active" data-g="all">全部</button>
+    <button class="filter-chip" data-g="work">💼 工作</button>
+    <button class="filter-chip" data-g="life">🏠 生活</button>
+    <button class="filter-chip" data-g="health">💚 健康</button>
+  </div>
+  <div class="todo-list" id="todos"></div>
+
+</div>
+
+<!-- ============ Bottom Floating Dock ============ -->
+<div class="dock">
+  <button class="dock-btn primary" id="btn-add">+ 新建待办</button>
+  <button class="dock-btn" id="btn-rules">⚡ 情绪规则</button>
+  <button class="dock-btn" id="btn-gallery-2">🎭 立绘池</button>
+</div>
+
+<!-- ============ Reminder Toast (宠物大图主视觉) ============ -->
+<div class="toast" id="toast">
+  <div class="toast-stage">
+    <img id="toast-pet-img" src="" alt="">
+    <div class="toast-badge"><span class="dot"></span>LIVE · 波波</div>
+    <div class="toast-bubble" id="toast-bubble">主人～该喝水啦</div>
+  </div>
+  <div class="toast-body-wrap">
+    <div class="toast-title" id="toast-title">任务提醒</div>
+    <div class="toast-body" id="toast-body">该喝水啦～</div>
+    <div class="toast-meta" id="toast-meta">触发：健康类任务 → 撒娇</div>
+  </div>
+  <div class="toast-actions">
+    <button class="btn-coral" style="flex:1" onclick="closeToast('done')">✓ 完成</button>
+    <button class="btn-soft" onclick="closeToast('later')">+10 分</button>
+    <button class="btn-soft" onclick="closeToast('close')">关</button>
+  </div>
+</div>
+
+<!-- ============ Pet Gallery Sheet ============ -->
+<div class="sheet-backdrop" id="sheet-bg" onclick="toggleSheet(false)"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <div class="section-header" style="margin-bottom:8px">
+      <div><span class="section-title">立绘池</span><span class="section-sub">6 情绪 × 4 时段 + 6 场景 + 3 节日 = 30 张</span></div>
+      <button class="btn-coral" onclick="toggleSheet(false)">完成</button>
+    </div>
+    <div class="gallery-grid" id="gallery"></div>
+    <div style="margin-top:14px;padding:14px;background:var(--surface-2);border-radius:16px;font-size:12px;color:var(--ink-2);line-height:1.6">
+      💡 生产版本由 Gemini 2.5 Flash Image 基于你上传的宠物照生成。首次生成约 ¥8，保留你宠物的面部特征，变化的是情绪、姿态、时段光线与节日装扮。当前展示为 Unsplash 占位图。
+    </div>
+  </div>
+</div>
+
+<!-- ============ New Todo Modal ============ -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-h">新建待办 ✍️</div>
+    <div class="field"><label>内容</label><input id="f-title" placeholder="例如：该喝水啦"></div>
+    <div class="grid-2">
+      <div class="field"><label>分组</label>
+        <select id="f-group"><option value="work">💼 工作</option><option value="life">🏠 生活</option><option value="health">💚 健康</option></select>
+      </div>
+      <div class="field"><label>优先级</label>
+        <select id="f-priority"><option value="p0">🔴 P0 紧急</option><option value="p1" selected>🟡 P1 重要</option><option value="p2">⚪ P2 一般</option></select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>提醒时间</label><input id="f-time" type="time" value="09:00"></div>
+      <div class="field"><label>重复</label>
+        <select id="f-repeat"><option value="once">仅一次</option><option value="daily">每天</option><option value="weekly">每周</option><option value="monthly">每月</option></select>
+      </div>
+    </div>
+    <div class="field"><label>截止日（可选）</label><input id="f-due" type="date"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn-soft" onclick="toggleModal(false)">取消</button>
+      <button class="btn-coral" onclick="submitNew()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Settings Drawer ============ -->
+<div class="drawer" id="drawer">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="section-title">设置</div>
+    <button class="btn-soft" onclick="toggleDrawer(false)">关闭</button>
+  </div>
+  <div class="field"><label>产品名</label><input value="FurryBuddy" id="app-name-input"></div>
+  <div class="field"><label>宠物名</label><input value="波波" id="pet-name-input"></div>
+  <div style="font-size:11px;color:var(--ink-3);margin:-4px 0 14px">候选产品名：FurryBuddy / 毛毛伴 / 宠伴 / Paws</div>
+  <div class="field"><label>基底画风</label>
+    <select><option selected>📸 写实照片风（Gemini 2.5 Flash Image）</option><option>🎨 日系二次元</option><option>🎬 皮克斯 3D</option><option>🖼 中国水墨</option></select>
+  </div>
+  <div class="field"><label>Gemini API Key</label><input type="password" placeholder="AIza..."></div>
+  <div style="font-size:11px;color:var(--ink-3);margin:-4px 0 14px">Key 存后端环境变量，前端不暴露；每日上限 50 张生成</div>
+  <div class="field"><label>访问密码</label><input type="password" placeholder="部署后访问需密码"></div>
+  <div style="display:flex;gap:8px;margin-top:14px">
+    <button class="btn-soft" onclick="exportData()">⬇ 导出备份</button>
+    <button class="btn-soft">⬆ 导入备份</button>
+  </div>
+  <div style="margin-top:20px;padding:14px;background:var(--surface-2);border-radius:16px;font-size:12px;color:var(--ink-2);line-height:1.6">
+    <b>V1 原型说明</b><br>
+    数据仅保留在当前会话，刷新即丢。立绘用 Unsplash 占位，生产版由 Gemini 生成。情绪映射规则可视化编辑在 V1 正式版实现。
+  </div>
+</div>
+
+<script>
+const MOODS = [
+  { id:"happy",  cn:"开心",   emoji:"😸", msg:(n)=>`${n}～我好开心，今天和你一起又搞定一件事！`},
+  { id:"hello",  cn:"打招呼", emoji:"👋", msg:(n)=>`下午好呀${n}～ 刚睡了个午觉，超想你的欸！`},
+  { id:"sleepy", cn:"犯困",   emoji:"😴", msg:(n)=>`呼噜呼噜…我有点困了，${n}也记得休息鸭`},
+  { id:"cute",   cn:"撒娇",   emoji:"🥺", msg:(n)=>`${n}…都好久没陪我了，是不是不要我了`},
+  { id:"cheer",  cn:"鼓励",   emoji:"💪", msg:(n)=>`别放弃！${n}已经做到这一步了，我陪你！`},
+  { id:"angry",  cn:"生气",   emoji:"😾", msg:(n)=>`哼！又在拖延，${n}再不做我就挠键盘啦`},
+];
+const PERIODS = [
+  { id:"morning",  cn:"早晨", emoji:"🌅" },
+  { id:"noon",     cn:"中午", emoji:"☀️" },
+  { id:"afternoon",cn:"下午", emoji:"🌤" },
+  { id:"night",    cn:"夜晚", emoji:"🌙" },
+  { id:"festival", cn:"节日", emoji:"🎉" },
+];
+const IMG_POOL = [
+  "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1561948955-570b270e7c36?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=400&q=80",
+  "https://images.unsplash.com/photo-1496807586562-947e10887dc5?auto=format&fit=crop&w=400&q=80",
+];
+
+let state = {
+  petName:"波波",
+  moodIdx:1, periodIdx:2, // hello, afternoon
+  filter:"all",
+  todos:[
+    { id:1, title:"法规库日会", group:"work", priority:"p0", time:"09:30", repeat:"daily", enabled:true,  done:true  },
+    { id:2, title:"起草出海合规立项纪要", group:"work", priority:"p1", time:"14:00", repeat:"once", enabled:true, done:false },
+    { id:3, title:"喝水提醒", group:"health", priority:"p2", time:"10:00", repeat:"daily", enabled:true, done:true },
+    { id:4, title:"起来活动活动", group:"health", priority:"p2", time:"15:00", repeat:"daily", enabled:false, done:false },
+    { id:5, title:"给波波买罐头", group:"life", priority:"p1", time:"20:00", repeat:"weekly", enabled:true, done:false },
+    { id:6, title:"远诊项目周会", group:"work", priority:"p1", time:"16:30", repeat:"weekly", enabled:true, done:false },
+  ],
+};
+
+const GROUP = { work:{cn:"工作",cls:"mt-work"}, life:{cn:"生活",cls:"mt-life"}, health:{cn:"健康",cls:"mt-health"} };
+const REPEAT = { once:"仅一次", daily:"每天", weekly:"每周", monthly:"每月" };
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+
+function renderTodos(){
+  const list = state.filter==="all" ? state.todos : state.todos.filter(t=>t.group===state.filter);
+  const sorted = list.slice().sort((a,b)=>a.time.localeCompare(b.time));
+  document.getElementById("todos").innerHTML = sorted.map(t=>{
+    const moodId = t.done ? "happy" : (t.group==="health" ? "cute" : (t.priority==="p0" ? "cheer" : "hello"));
+    const mIdx = MOODS.findIndex(m=>m.id===moodId);
+    const [h,m] = t.time.split(":");
+    return `
+      <div class="todo" style="${!t.enabled?'opacity:0.55':''}">
+        <div class="todo-time"><div class="h">${h}</div><div class="m">${m}</div></div>
+        <div class="todo-pet"><img src="${IMG_POOL[mIdx % IMG_POOL.length]}"></div>
+        <div class="todo-main">
+          <div class="todo-title" style="${t.done?'text-decoration:line-through;color:#94A3B8':''}">${esc(t.title)}</div>
+          <div class="todo-meta">
+            <span class="mini-tag ${GROUP[t.group].cls}">${GROUP[t.group].cn}</span>
+            <span class="mini-tag mt-${t.priority}">${t.priority.toUpperCase()}</span>
+            <span class="mt-repeat">· ${REPEAT[t.repeat]}</span>
+          </div>
+        </div>
+        <div class="toggle ${t.enabled?'on':''}" onclick="event.stopPropagation();toggleTodo(${t.id})"><div class="knob"></div></div>
+      </div>
+    `;
+  }).join("") || `<div style="text-align:center;padding:40px;color:var(--ink-3)">这个分组还没有待办 ✨</div>`;
+
+  document.getElementById("s-today").textContent = state.todos.length;
+  document.getElementById("s-done").textContent = state.todos.filter(t=>t.done).length;
+  document.getElementById("greet-count").textContent = state.todos.filter(t=>t.enabled && !t.done).length;
+}
+
+function renderHero(){
+  const m = MOODS[state.moodIdx], p = PERIODS[state.periodIdx];
+  document.getElementById("pet-name").textContent = state.petName;
+  document.getElementById("mood-emoji").textContent = m.emoji;
+  document.getElementById("mood-badge-name").textContent = m.cn;
+  document.getElementById("mood-pill-emoji").textContent = p.emoji;
+  document.getElementById("mood-pill-period").textContent = p.cn;
+  document.getElementById("pet-msg").textContent = m.msg(state.petName);
+  document.getElementById("portrait-img").src = IMG_POOL[(state.moodIdx*5 + state.periodIdx) % IMG_POOL.length];
+}
+
+function renderGallery(){
+  const cells = [];
+  MOODS.forEach((m,mi)=>{
+    PERIODS.forEach((p,pi)=>{
+      const idx = mi*5 + pi;
+      const active = (mi===state.moodIdx && pi===state.periodIdx) ? "active" : "";
+      cells.push(`
+        <div class="g-cell ${active}" onclick="pickMood(${mi},${pi})" title="${m.cn}·${p.cn}">
+          <img src="${IMG_POOL[idx % IMG_POOL.length]}">
+          ${p.id==="festival"?'<div class="g-festival">🎉</div>':''}
+          <div class="g-cap">${m.emoji} ${m.cn} · ${p.cn}</div>
+        </div>
+      `);
+    });
+  });
+  document.getElementById("gallery").innerHTML = cells.join("");
+}
+
+function pickMood(mi,pi){
+  state.moodIdx = mi; state.periodIdx = pi;
+  renderHero(); renderGallery();
+}
+
+function toggleTodo(id){
+  const t = state.todos.find(x=>x.id===id); t.enabled=!t.enabled; renderTodos();
+}
+
+// filters
+document.querySelectorAll(".filter-chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".filter-chip").forEach(x=>x.classList.remove("active"));
+  c.classList.add("active");
+  state.filter = c.dataset.g;
+  renderTodos();
+}));
+
+// hero buttons
+document.getElementById("btn-next-mood").addEventListener("click",()=>{
+  state.moodIdx = (state.moodIdx+1) % MOODS.length;
+  renderHero(); renderGallery();
+});
+document.getElementById("btn-regen").addEventListener("click",()=>{
+  document.getElementById("portrait-img").style.filter = "blur(8px)";
+  setTimeout(()=>{ document.getElementById("portrait-img").style.filter = ""; }, 600);
+});
+
+// gallery sheet
+function toggleSheet(show){
+  document.getElementById("sheet").classList.toggle("show",show);
+  document.getElementById("sheet-bg").classList.toggle("show",show);
+}
+document.getElementById("btn-gallery").addEventListener("click",()=>toggleSheet(true));
+document.getElementById("btn-gallery-2").addEventListener("click",()=>toggleSheet(true));
+
+// modal
+function toggleModal(show){ document.getElementById("modal").classList.toggle("show",show); }
+document.getElementById("btn-add").addEventListener("click",()=>toggleModal(true));
+function submitNew(){
+  const title = document.getElementById("f-title").value.trim();
+  if(!title) return alert("请输入待办内容");
+  state.todos.push({
+    id:Date.now(), title,
+    group:document.getElementById("f-group").value,
+    priority:document.getElementById("f-priority").value,
+    time:document.getElementById("f-time").value||"09:00",
+    repeat:document.getElementById("f-repeat").value,
+    due:document.getElementById("f-due").value,
+    enabled:true, done:false,
+  });
+  toggleModal(false);
+  document.getElementById("f-title").value="";
+  renderTodos();
+  // 任务创建 → 打招呼
+  state.moodIdx = 1; renderHero(); renderGallery();
+}
+
+// drawer
+function toggleDrawer(show){ document.getElementById("drawer").classList.toggle("show",show); }
+document.getElementById("btn-settings").addEventListener("click",()=>toggleDrawer(true));
+document.addEventListener("input",(e)=>{
+  if(e.target.id==="pet-name-input"){
+    state.petName = e.target.value||"宠物";
+    renderHero();
+  }
+});
+
+// demo reminder
+document.getElementById("btn-demo").addEventListener("click",()=>{
+  const active = state.todos.filter(t=>t.enabled && !t.done);
+  const t = active[Math.floor(Math.random()*active.length)] || state.todos[0];
+  const moodId = t.group==="health" ? "cute" : (t.priority==="p0" ? "cheer" : "hello");
+  const mi = MOODS.findIndex(m=>m.id===moodId);
+  state.moodIdx = mi; renderHero(); renderGallery();
+  const m = MOODS[mi];
+  document.getElementById("toast-pet-img").src = IMG_POOL[(mi*5+state.periodIdx) % IMG_POOL.length];
+  document.querySelector(".toast-badge").innerHTML = `<span class="dot"></span>LIVE · ${state.petName}`;
+  document.getElementById("toast-bubble").textContent = m.msg(state.petName);
+  document.getElementById("toast-title").textContent = `${m.emoji} ${m.cn} · ${GROUP[t.group].cn}类提醒`;
+  document.getElementById("toast-body").textContent = t.title;
+  document.getElementById("toast-meta").textContent = `触发：${t.group==="health"?"健康类任务":t.priority==="p0"?"P0 紧急到点":"到点提醒"} → ${m.cn}`;
+  // 先隐藏再显示，重放入场动画
+  const toast = document.getElementById("toast");
+  toast.classList.remove("show");
+  void toast.offsetWidth;
+  toast.classList.add("show");
+});
+function closeToast(action){
+  document.getElementById("toast").classList.remove("show");
+  if(action==="done"){ state.moodIdx=0; renderHero(); renderGallery(); }
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `furrybuddy-${Date.now()}.json`; a.click();
+}
+
+// period auto-detect
+(function initPeriod(){
+  const h = new Date().getHours();
+  const p = h<11 ? 0 : h<14 ? 1 : h<18 ? 2 : 3;
+  state.periodIdx = p;
+  document.getElementById("greet-period").textContent =
+    h<6?"凌晨好":h<11?"早上好":h<14?"中午好":h<18?"下午好":"晚上好";
+})();
+
+// boot
+renderHero(); renderTodos(); renderGallery();
+</script>
+
+</body>
+</html>

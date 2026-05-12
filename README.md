@@ -1,62 +1,72 @@
-# FurryBuddy · 毛毛伴（产品名待定）
+# FurryBuddy · 毛毛伴
 
-**V1 原型 Demo · 自研设计稿**  
-用于需求对齐与交互评审，非生产代码，不包含真实 AI / 后端 / 持久化。
+> 纯个人用的 Web 宠物化身提醒日历。上传你宠物的照片 → AI 生成 30 张立绘 → 待办到点时宠物化身弹窗提醒。
 
-> ⚠️ 前一版原型结构参考了 uTools「喵提醒」的截图（顶部 tab、左右平分布局、"点击变身"按钮、水印"波斯猫"等），存在视觉抄袭风险，已整体推翻重做。本版为独立设计。
+## 技术栈
 
-## 跑起来
+- **前端**：Vite + React 18 + TypeScript + Tailwind v4
+- **状态**：Zustand
+- **本地存储**：Dexie.js (IndexedDB)
+- **AI**：Gemini 2.5 Flash Image (Nano Banana) 图生图
+- **部署**：Vercel（Serverless Functions 代理 Gemini + Basic Auth 保护）
 
-双击 `index.html` 即可（需联网加载 Tailwind CDN / Google Fonts / Unsplash 占位图）。
+## 快速开始
 
-## 本版与上一版的根本差异
+```bash
+# 1. 装依赖
+npm install
 
-| 维度 | 旧版（已废弃） | 新版 |
-|---|---|---|
-| 产品名 | 沿用"喵提醒" ❌ | FurryBuddy / 毛毛伴（占位，待你定名）|
-| 布局 | 左宠物 + 右待办 50/50 平分 | **左时光轴 + 右档案 + 底部映射条** 三段式 |
-| 主视觉 | 紫粉玻璃拟态 + 奶白底 | **米黄纸本 + 砖红/深绿/金黄 + serif 杂志风** |
-| 宠物位置 | 舞台主角，单张大图 | 档案角色，主角是"**30 张立绘池墙**" |
-| 差异化呈现 | 无 | **情绪映射条**（底部，可视化触发→表情规则）|
-| 时间感 | 无 | 每条待办按时间纵向排轴，配对应情绪小立绘 |
-| 抄袭风险元素 | 水印"波斯猫"/点击变身/使用教程/uTools 窗口 chrome | 全部移除 |
+# 2. 准备密钥（只本地，不进 git）
+cp .env.example .env.local
+# 编辑 .env.local 填入 GEMINI_API_KEY
 
-## 交互清单（✅ 原型可点）
+# 3. 启动开发服务器
+npm run dev
+# → http://localhost:5173
+```
 
-- ✅ 顶部报纸式 masthead + 实时时钟 / 时段显示
-- ✅ 左侧**今日时光轴**：按时间纵向排列，每条 todo 含小立绘、分组/优先级 tag、启用开关
-- ✅ 分组 tabs（全部/工作/生活/健康），报刊式 tab 风格
-- ✅ 新建待办 Modal（分组/优先级/截止日/提醒时间/重复规则），保存后自动触发"打招呼"情绪
-- ✅ 右侧**宠物档案**：大立绘 + 边缘 NO.xx 标签 + 红印章 + 当前状态文案
-- ✅ **立绘池 6×5 网格**（6 情绪 × 5 变体：早/午/下/晚/节日）
-- ✅ 点立绘池任意一格切换主档案
-- ✅ 底部**情绪映射条**：6 条内置规则（创建→打招呼、到点→鼓励、完成→开心、逾期→生气、健康类→撒娇、深夜→犯困）
-- ✅ **演示提醒**：按映射规则挑情绪 → 右下角杂志风 toast 弹出，含触发原因说明
-- ✅ 设置抽屉（产品名/宠物名、基底画风、Gemini Key、访问密码、数据导入导出）
-- ✅ JSON 数据导出
+## Spike · 验证 AI 图生图可用性（M0）
 
-## 原型未实现（V1 正式版再做）
+上真实开发前，先用你的宠物真照片跑一次 spike，确认 Gemini 能保持宠物外观一致性：
 
-- 🚧 真实 Gemini 2.5 Flash Image 图生图（当前是 Unsplash 随机猫图占位）
-- 🚧 IndexedDB 持久化（当前刷新即丢）
-- 🚧 Web Notification API 真实系统级通知
-- 🚧 情绪映射规则**可视化编辑器**（当前只展示，不可编辑）
-- 🚧 节日皮肤**自动切换**（当前是手动按钮占位）
-- 🚧 后端代理 / 密码鉴权 / Vercel 部署
+```bash
+node spike.mjs path/to/your/cat.jpg
+# 输出 5 张变体到 spike-output/
+```
 
-## 设计决策说明
+产出的 5 张图肉眼判断：**是不是同一只猫？情绪姿态是否有变化？** 通过 → 下一步集成 API；不通过 → 换模型（Flux Kontext / Imagen 4）。
 
-- **杂志纸本风**：和喵提醒的"桌面小宠物插件"视觉彻底错开，定位是"**我的宠物日历/伴侣档案**"的编辑部感
-- **立绘池前置展示**：上来就让用户看到"30 张 AI 生成立绘"这个核心卖点的数量级，视觉震撼
-- **情绪映射条**：这是独有功能——可视化展示"触发事件→宠物情绪"的映射规则，是喵提醒类简单提醒插件没有的产品护城河
-- **每条 todo 配小立绘**：强化"任务-伙伴"关联，点下去能看到宠物陪你一起走过今天
+## 目录结构
 
-## 下一步
+```
+.
+├─ index.html          Vite 入口
+├─ src/
+│  ├─ main.tsx         启动：seed DB → 加载 → render
+│  ├─ App.tsx          页面容器（Top Nav + Hero + Stats + Todos + Dock + 悬浮组件）
+│  ├─ index.css        全站 CSS（玻璃拟态 + 珊瑚橙 + 呼吸动画）
+│  ├─ types.ts         数据类型定义
+│  ├─ db.ts            Dexie schema（todos / pet / portraits / settings）
+│  ├─ store.ts         Zustand：状态 + action
+│  ├─ lib/
+│  │  ├─ constants.ts  MOODS / PERIODS / GROUP_META / mock 图片池
+│  │  └─ rules.ts      情绪映射规则引擎
+│  └─ components/
+│     ├─ Hero.tsx           宠物大头像 + 当前情绪 + 操作按钮
+│     ├─ TodoList.tsx       今日时光待办列表（含筛选）
+│     ├─ Reminder.tsx       ⭐ 提醒组件：宠物大图 + 消息卡 两段式
+│     ├─ Gallery.tsx        30 张立绘池（底部抽屉）
+│     └─ Modals.tsx         新建待办 Modal + 设置抽屉
+├─ prototype/          原始 HTML 单文件 demo（历史保留）
+├─ spike.mjs           M0 技术验证脚本
+└─ vercel.json         部署配置（后续加）
+```
 
-1. 你打开看一遍，告诉我：
-   - 整体方向是否对路？
-   - 配色 / 字体 / 版式要不要调？
-   - 产品名拍哪个？
-   - 情绪映射规则要加几条？
-2. 给我 **GitHub 仓库地址**，我准备 `.gitignore` / 初始化 / Vercel 部署脚本
-3. 原型定稿 → 按真实技术栈（Vite + React + TS + Tailwind + Dexie + Vercel Serverless）落地 V1
+## 开发路线
+
+- [x] M0 · 原型 HTML 设计稿
+- [x] M1 · Vite + React 骨架 + 本地持久化
+- [ ] M1.5 · Gemini Spike（等宠物真照片）
+- [ ] M2 · `/api/generate` Serverless Function + 首次生成 30 张立绘
+- [ ] M3 · 提醒调度（Web Notification API + 定时轮询）
+- [ ] M4 · Vercel 部署 + Basic Auth 密码防护

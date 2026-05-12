@@ -39,3 +39,6 @@ spike-output/
 # temp
 tmp/
 .cache/
+
+# TypeScript build info
+*.tsbuildinfo
