@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import { MOODS, PERIODS } from '@/lib/constants'
 import type { MoodId, PeriodId, Portrait } from '@/types'
 import { COST_IMAGE, COST_VIDEO } from '@/types'
+import { IMEInput } from './IMEInput'
 
 /**
  * 宠物工作室（Studio）
@@ -75,7 +76,7 @@ export function Studio() {
         </div>
         <div className="field" style={{ marginTop: 12 }}>
           <label>宠物名</label>
-          <input
+          <IMEInput
             value={petName}
             placeholder="给宠物起个名字"
             onChange={(e) => setPetName(e.target.value)}

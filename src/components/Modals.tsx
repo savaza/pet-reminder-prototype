@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store'
 import type { GroupId, PriorityId, RepeatId } from '@/types'
+import { IMEInput } from './IMEInput'
 
 export function AddTodoModal() {
   const { modal, openModal, addTodo, updateTodo, deleteTodo, openEditTodo, editingTodoId, todos } = useAppStore()
@@ -42,7 +43,7 @@ export function AddTodoModal() {
     <div className={`modal-bg ${modal === 'add-todo' ? 'show' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) close() }}>
       <div className="modal">
         <div className="modal-h">{isEditing ? '编辑待办 ✏️' : '新建待办 ✍️'}</div>
-        <div className="field"><label>内容</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：该喝水啦" /></div>
+        <div className="field"><label>内容</label><IMEInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：该喝水啦" /></div>
         <div className="grid-2">
           <div className="field"><label>分组</label>
             <select value={group} onChange={(e) => setGroup(e.target.value as GroupId)}>
@@ -102,7 +103,7 @@ export function SettingsDrawer() {
 
       <div className="field"><label>产品名</label><input defaultValue="FurryBuddy" /></div>
       <div className="field"><label>宠物名</label>
-        <input
+        <IMEInput
           value={petName}
           placeholder="给宠物起个名字"
           onChange={(e) => setPetName(e.target.value)}
