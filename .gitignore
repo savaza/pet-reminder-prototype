@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build output
+dist/
+dist-ssr/
+build/
+.vercel/
+.next/
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# editor / os
+.vscode/*
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# test artifacts / spikes
+spike-output/
+*.spike.png
+*.spike.jpg
+
+# temp
+tmp/
+.cache/
