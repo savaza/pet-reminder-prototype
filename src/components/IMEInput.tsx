@@ -1,36 +1,25 @@
-import { useRef, type InputHTMLAttributes, type ChangeEvent } from 'react'
+import { type InputHTMLAttributes } from 'react'
 
 /**
  * IME 安全 input——替代原生 <input>，解决中文/日文/韩文输入法 composition 期间
- * React 受控组件重渲染打断 IME 组字、导致拼音被当作普通字符提交的经典 bug。
+ * React 受控组件重渲染打断 IME 组字、拼音被当普通字符提交的经典 bug。
  *
- * 用法：<IMEInput value={...} onChange={...} /> 其它属性全部透传。
+ * 实现：读取原生 InputEvent.isComposing 标志。浏览器在 IME 组字进行中触发的
+ * input 事件，此标志为 true；组字最终 commit 时为 false。
+ * 相比自维护 composingRef 的方案，不会因为意外 blur / Esc 等导致状态卡死。
+ *
+ * 用法：<IMEInput value={...} onChange={...} />  其它 props 全部透传。
  */
 export function IMEInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  const composing = useRef(false)
-  const { onChange, onCompositionStart, onCompositionEnd, onBlur, ...rest } = props
-
+  const { onChange, ...rest } = props
   return (
     <input
       {...rest}
       onChange={(e) => {
-        if (composing.current) return // 组字进行中，先不提交
+        // 组字进行中的 input 事件，native flag isComposing=true，跳过
+        // 组字结束后浏览器会再触发一次 input 事件，isComposing=false，走正常提交
+        if ((e.nativeEvent as InputEvent).isComposing) return
         onChange?.(e)
-      }}
-      onCompositionStart={(e) => {
-        composing.current = true
-        onCompositionStart?.(e)
-      }}
-      onCompositionEnd={(e) => {
-        composing.current = false
-        onCompositionEnd?.(e)
-        // 组字结束，提交最终结果（模拟一次 change）
-        onChange?.(e as unknown as ChangeEvent<HTMLInputElement>)
-      }}
-      onBlur={(e) => {
-        // 有些浏览器 blur 时若仍在组字，不会触发 compositionend，手动兜底
-        composing.current = false
-        onBlur?.(e)
       }}
     />
   )
