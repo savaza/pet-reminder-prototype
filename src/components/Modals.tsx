@@ -78,7 +78,14 @@ export function SettingsDrawer() {
       </button>
 
       <div className="field"><label>产品名</label><input defaultValue="FurryBuddy" /></div>
-      <div className="field"><label>宠物名</label><input value={petName} onChange={(e) => setPetName(e.target.value || '宠物')} /></div>
+      <div className="field"><label>宠物名</label>
+        <input
+          value={petName}
+          placeholder="给宠物起个名字"
+          onChange={(e) => setPetName(e.target.value)}
+          onBlur={(e) => { if (!e.target.value.trim()) setPetName('宠物') }}
+        />
+      </div>
       <div style={{ fontSize: 11, color: 'var(--ink-3)', margin: '-4px 0 14px' }}>候选产品名：FurryBuddy / 毛毛伴 / 宠伴 / Paws</div>
 
       <div className="field"><label>Gemini API Key</label><input type="password" placeholder="AIza..." /></div>

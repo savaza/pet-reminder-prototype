@@ -75,7 +75,12 @@ export function Studio() {
         </div>
         <div className="field" style={{ marginTop: 12 }}>
           <label>宠物名</label>
-          <input value={petName} onChange={(e) => setPetName(e.target.value || '宠物')} />
+          <input
+            value={petName}
+            placeholder="给宠物起个名字"
+            onChange={(e) => setPetName(e.target.value)}
+            onBlur={(e) => { if (!e.target.value.trim()) setPetName('宠物') }}
+          />
         </div>
         <div className="field">
           <label>基底画风</label>
