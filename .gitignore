@@ -36,6 +36,12 @@ spike-output/
 *.spike.png
 *.spike.jpg
 
+# 用户本地宠物照片（私人资产，不进仓库）
+bobo.jpg
+bobo.png
+pet-input.*
+my-pet.*
+
 # temp
 tmp/
 .cache/

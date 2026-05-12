@@ -228,15 +228,16 @@ body{
   transition:all .5s cubic-bezier(.3,.9,.25,1.5);
 }
 .reminder-wrap.show .rem-pet{transform:translateY(0) scale(1);opacity:1}
-.rem-pet img{
-  width:100%;height:100%;object-fit:cover;
-  animation:rem-breathe 3.5s ease-in-out infinite;
+.rem-media{
+  width:100%;height:100%;object-fit:cover;display:block;
 }
+/* 静态图走 CSS 呼吸模拟"活着"，视频本身有运动不需要 */
+.rem-media-static{animation:rem-breathe 3.5s ease-in-out infinite}
 @keyframes rem-breathe{
   0%,100%{transform:scale(1.02)}
   50%{transform:scale(1.06) translateY(-4px)}
 }
-.reminder-wrap.show .rem-pet img{
+.reminder-wrap.show .rem-media-static{
   animation:rem-enter .9s cubic-bezier(.3,.9,.25,1.5), rem-breathe 3.5s ease-in-out .9s infinite;
 }
 @keyframes rem-enter{

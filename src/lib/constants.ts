@@ -33,7 +33,16 @@ export const REPEAT_META: Record<RepeatId, string> = {
   once: '仅一次', daily: '每天', weekly: '每周', monthly: '每月',
 }
 
-// 占位图——生产版本被 Gemini 生成的 blob 替换
+/**
+ * 动态视频池——生产版本由 Veo 2 基于用户宠物照生成，每个情绪一段
+ * 当前 prototype 阶段：仅 `hello` 有真实 Veo 视频（bobo 打招呼 5 秒）
+ * 其它 mood 暂 fallback 到静态图 + CSS 呼吸动画
+ */
+export const VIDEO_POOL: Partial<Record<import('@/types').MoodId, string>> = {
+  hello: '/pets/bobo-hello.mp4',
+}
+
+// 静态占位图——生产版本被 Gemini Flash Image 生成的 blob 替换
 export const MOCK_IMAGES = [
   'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80',
   'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=600&q=80',
