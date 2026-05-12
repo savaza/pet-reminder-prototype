@@ -7,7 +7,7 @@ import { MOODS, PERIODS, GROUP_META, VIDEO_POOL, imgForMoodPeriod } from '@/lib/
  * - 底部 rem-card：紧凑消息卡（任务标题 + 触发原因 + 操作按钮）
  */
 export function Reminder() {
-  const { toast, petName, activePeriodIdx, closeToast, completeTodo } = useAppStore()
+  const { toast, petName, activePeriodIdx, closeToast, completeTodo, snoozeTodo } = useAppStore()
   const m = toast ? MOODS.find((x) => x.id === toast.moodId)! : MOODS[1]
   const p = toast ? PERIODS.find((x) => x.id === toast.periodId) ?? PERIODS[activePeriodIdx] : PERIODS[activePeriodIdx]
   const mIdx = MOODS.findIndex((x) => x.id === m.id)
@@ -19,6 +19,10 @@ export function Reminder() {
 
   const handleDone = () => {
     if (toast?.todoId) completeTodo(toast.todoId)
+    closeToast()
+  }
+  const handleSnooze = () => {
+    if (toast?.todoId) snoozeTodo(toast.todoId, 10)
     closeToast()
   }
 
@@ -60,7 +64,7 @@ export function Reminder() {
         </div>
         <div className="rem-actions">
           <button className="btn-coral" style={{ flex: 1 }} onClick={handleDone}>✓ 完成</button>
-          <button className="btn-soft" onClick={closeToast}>+10 分</button>
+          <button className="btn-soft" onClick={handleSnooze}>+10 分</button>
           <button className="btn-soft" onClick={closeToast}>关</button>
         </div>
       </div>

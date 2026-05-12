@@ -1,20 +1,36 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAppStore } from './store'
 import { Hero } from './components/Hero'
 import { TodoList } from './components/TodoList'
 import { Reminder } from './components/Reminder'
 import { Gallery } from './components/Gallery'
+import { Studio } from './components/Studio'
+import { ConfirmModal } from './components/ConfirmModal'
 import { AddTodoModal, SettingsDrawer } from './components/Modals'
 import { greetByHour } from './lib/constants'
+import { startScheduler } from './lib/scheduler'
+import { ensureNotificationPermission, currentPermission } from './lib/notifications'
 
 export default function App() {
   const {
     todos, openModal, toggleDrawer, toggleSheet, triggerDemoReminder,
+    fireTodo, setNotifPermission,
   } = useAppStore()
 
   const greet = useMemo(() => greetByHour(new Date().getHours()), [])
   const remaining = todos.filter((t) => t.enabled && !t.done).length
   const doneCount = todos.filter((t) => t.done).length
+
+  // 启动时：请求通知权限 + 开启 30 秒扫描调度器
+  useEffect(() => {
+    setNotifPermission(currentPermission())
+    ensureNotificationPermission().then(() => setNotifPermission(currentPermission()))
+    const handle = startScheduler(
+      () => useAppStore.getState().todos,
+      (todo) => fireTodo(todo),
+    )
+    return () => handle.stop()
+  }, [fireTodo, setNotifPermission])
 
   return (
     <>
@@ -60,6 +76,8 @@ export default function App() {
       {/* 悬浮组件 */}
       <Reminder />
       <Gallery />
+      <Studio />
+      <ConfirmModal />
       <AddTodoModal />
       <SettingsDrawer />
     </>

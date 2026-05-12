@@ -55,7 +55,7 @@ export function AddTodoModal() {
 }
 
 export function SettingsDrawer() {
-  const { drawerOpen, toggleDrawer, petName, setPetName } = useAppStore()
+  const { drawerOpen, toggleDrawer, petName, setPetName, toggleStudio, notifPermission } = useAppStore()
 
   return (
     <div className={`drawer ${drawerOpen ? 'show' : ''}`}>
@@ -63,27 +63,45 @@ export function SettingsDrawer() {
         <div className="section-title">设置</div>
         <button className="btn-soft" onClick={() => toggleDrawer(false)}>关闭</button>
       </div>
+
+      {/* 🎨 Studio 入口 */}
+      <button
+        className="studio-entry"
+        onClick={() => { toggleDrawer(false); setTimeout(() => toggleStudio(true), 150) }}
+      >
+        <div style={{ fontSize: 22 }}>🎨</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>宠物工作室</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>管理基准照 + 生成 30 张情绪立绘 / 视频</div>
+        </div>
+        <div style={{ fontSize: 18, color: 'var(--ink-3)' }}>›</div>
+      </button>
+
       <div className="field"><label>产品名</label><input defaultValue="FurryBuddy" /></div>
       <div className="field"><label>宠物名</label><input value={petName} onChange={(e) => setPetName(e.target.value || '宠物')} /></div>
       <div style={{ fontSize: 11, color: 'var(--ink-3)', margin: '-4px 0 14px' }}>候选产品名：FurryBuddy / 毛毛伴 / 宠伴 / Paws</div>
-      <div className="field"><label>基底画风</label>
-        <select>
-          <option>📸 写实照片风（Gemini 2.5 Flash Image）</option>
-          <option>🎨 日系二次元</option>
-          <option>🎬 皮克斯 3D</option>
-          <option>🖼 中国水墨</option>
-        </select>
-      </div>
+
       <div className="field"><label>Gemini API Key</label><input type="password" placeholder="AIza..." /></div>
       <div style={{ fontSize: 11, color: 'var(--ink-3)', margin: '-4px 0 14px' }}>Key 存后端环境变量，前端不暴露；每日上限 50 张生成</div>
       <div className="field"><label>访问密码</label><input type="password" placeholder="部署后访问需密码" /></div>
+
+      <div className="field">
+        <label>系统通知</label>
+        <div style={{ fontSize: 12, color: 'var(--ink-2)', marginTop: 4 }}>
+          当前状态：<b style={{ color: notifPermission === 'granted' ? 'var(--emerald)' : notifPermission === 'denied' ? '#DC2626' : 'var(--ink-3)' }}>
+            {notifPermission === 'granted' ? '已授权 ✓' : notifPermission === 'denied' ? '已拒绝 ✗' : notifPermission === 'unsupported' ? '浏览器不支持' : '未授权'}
+          </b>
+        </div>
+      </div>
+
       <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
         <button className="btn-soft">⬇ 导出备份</button>
         <button className="btn-soft">⬆ 导入备份</button>
       </div>
+
       <div style={{ marginTop: 20, padding: 14, background: 'var(--surface-2)', borderRadius: 16, fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.6 }}>
         <b>V1 原型说明</b><br />
-        数据存本地 IndexedDB，关闭刷新都在；立绘用 Unsplash 占位，生产版由 Gemini 生成。情绪映射可视化编辑器在 V2 实现。
+        数据存本地 IndexedDB，关闭刷新都在。提醒调度已接入 Web Notification API。Studio 当前是 Mock 模式，不实际调用 AI。
       </div>
     </div>
   )
