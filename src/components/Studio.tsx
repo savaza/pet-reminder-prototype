@@ -83,12 +83,17 @@ export function Studio() {
           style={{ display: 'none' }}
         />
         <div className="pet-base-row">
-          <div className="pet-base-thumb" style={{ cursor: 'pointer' }} onClick={handleUploadClick} title="点击更换">
+          <div
+            className={`pet-base-thumb ${petPhotoUrl ? 'has-photo' : 'empty'}`}
+            onClick={handleUploadClick}
+            title={petPhotoUrl ? '点击更换' : '点击上传'}
+          >
             {petPhotoUrl ? (
               <img src={petPhotoUrl} alt="基准照" />
             ) : (
-              <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', fontSize: 10, color: 'var(--ink-3)', textAlign: 'center', padding: 4 }}>
-                点击<br />上传
+              <div className="thumb-empty-prompt">
+                <div style={{ fontSize: 20 }}>📷</div>
+                <div>点击上传</div>
               </div>
             )}
           </div>
@@ -100,21 +105,9 @@ export function Studio() {
             ) : (
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-3)' }}>尚未上传基准照</div>
             )}
-            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>
-              用于 AI 生成时保持宠物面部特征一致性（JPG/PNG/WEBP，≤8MB）
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button className="btn-coral" style={{ padding: '6px 10px', fontSize: 12 }} onClick={handleUploadClick}>
-                📷 {petPhotoUrl ? '更换' : '上传基准照'}
-              </button>
-              <button
-                className="btn-soft"
-                style={{ padding: '6px 10px', fontSize: 12, opacity: 0.5, cursor: 'not-allowed' }}
-                title="V2 再做：多角度能提升 AI 一致性"
-                onClick={() => alert('➕ 追加角度 · V2 再做（多张不同角度的参考照能让 AI 生成时脸部一致性更稳）')}
-              >
-                ➕ 追加角度
-              </button>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4, lineHeight: 1.55 }}>
+              用于 AI 生成时保持宠物面部特征一致性<br />
+              支持 JPG / PNG / WEBP，≤ 8MB · 点缩略图即可 {petPhotoUrl ? '更换' : '上传'}
             </div>
           </div>
         </div>
